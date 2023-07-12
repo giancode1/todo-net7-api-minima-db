@@ -3,9 +3,24 @@ using Microsoft.EntityFrameworkCore;
 using TodosApi.Context;
 using TodosApi.Models;
 
+var  MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<TodosContext>(options => options.UseInMemoryDatabase("TodoDB"));
+
+//CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+      policy  =>
+      {
+          policy.WithOrigins("*")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowAnyOrigin();
+      });
+});
 
 var app = builder.Build();
 
@@ -23,6 +38,8 @@ using(var scope = app.Services.CreateScope())
     context.Database.EnsureCreated(); //crea tablas, en este caso con los 2 datos q puse en OnModelCreating de TodosContext
 }
 
+//cors
+app.UseCors(MyAllowSpecificOrigins);
 
 app.MapGet("/todos", async ([FromServices] TodosContext context) => await context.Todos.ToListAsync());
 
@@ -30,12 +47,15 @@ app.MapGet("/todos/{id}", async ([FromServices] TodosContext context, Guid id) =
     await context.Todos.FindAsync(id)
         is Todo todo
             ? Results.Ok(todo)
-            : Results.NotFound());          
+            : Results.NotFound());   
+
+app.MapGet("/todos/complete", async([FromServices]TodosContext context) => 
+  await context.Todos.Where(t => t.IsComplete ).ToListAsync());
 
 app.MapPost("/todos", async (TodosContext context, Todo todo) =>
 {
     todo.Id = Guid.NewGuid();
-    todo.Completed = false;
+    todo.IsComplete  = false;
     todo.CreatedAt = DateTime.Now;
 
     await context.Todos.AddAsync(todo);
@@ -50,7 +70,7 @@ app.MapPut("/todos/{id}", async (TodosContext context, Todo updateTodo, Guid id)
 
   todo.Task = updateTodo.Task;
   todo.Description = updateTodo.Description;
-  todo.Completed = updateTodo.Completed;
+  todo.IsComplete  = updateTodo.IsComplete ;
 
   await context.SaveChangesAsync();
   return Results.NoContent();
@@ -65,7 +85,7 @@ app.MapDelete("/todos/{id}", async (TodosContext context, Guid id)=>
   }
   context.Todos.Remove(todo);
   await context.SaveChangesAsync();
-  return Results.Ok();
+  return Results.Ok(todo);
 });
 
 app.Run();

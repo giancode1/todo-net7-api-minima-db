@@ -10,8 +10,8 @@ public class TodosContext: DbContext
     protected override void OnModelCreating (ModelBuilder modelBuilder)
     {
         List<Todo> todosInit = new List<Todo>();
-        todosInit.Add(new Todo {Id=Guid.Parse("4e26179c-6a70-41bc-8e78-69c6b77cb910"), Task = "Lavar los platos", Completed=false, CreatedAt=DateTime.Now});
-        todosInit.Add(new Todo {Id=Guid.NewGuid(), Task = "Estudiar Ingles", Completed=true, CreatedAt=DateTime.Now});
+        todosInit.Add(new Todo {Id=Guid.Parse("4e26179c-6a70-41bc-8e78-69c6b77cb910"), Task = "Lavar los platos", IsComplete =false, CreatedAt=DateTime.Now});
+        todosInit.Add(new Todo {Id=Guid.NewGuid(), Task = "English yes", IsComplete =true, CreatedAt=DateTime.Now});
         
         modelBuilder.Entity<Todo>(entity=>
         {
