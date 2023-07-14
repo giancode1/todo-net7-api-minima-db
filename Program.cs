@@ -7,7 +7,15 @@ var  MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<TodosContext>(options => options.UseInMemoryDatabase("TodoDB"));
+//conexion, poner luego en otro mejor lugar
+var connectionString = builder.Configuration.GetConnectionString("Todos") ?? "Data Source=Todos.db";
+
+//db sqlite:
+builder.Services.AddSqlite<TodosContext>(connectionString);
+// builder.Services.AddDbContext<TodosContext>(options => options.UseSqlite(connectionString));
+
+//en memoria:
+//builder.Services.AddDbContext<TodosContext>(options => options.UseInMemoryDatabase("TodoDB"));
 
 //CORS
 builder.Services.AddCors(options =>
